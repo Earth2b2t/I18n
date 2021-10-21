@@ -66,4 +66,5 @@ welcome=#tようこそ {0} 様!#cルールを確認するようお願いしま�
 ```
 
 Result
+
 ![image](https://user-images.githubusercontent.com/26406334/138262372-c2b38f15-d5e0-4928-9bc4-fefeaee5fc1f.png)
