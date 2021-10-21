@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group 'earth2b2t'
+version '1.0-SNAPSHOT'
+
+subprojects {
+    apply plugin: 'maven-publish'
+    afterEvaluate {
+        publishing {
+            publications {
+                "$project.name"(MavenPublication) {
+                    groupId rootProject.group
+                    artifactId rootProject.name + '-' + project.name
+                    version rootProject.version
+                    from components.java
+                }
+            }
+        }
+    }
+}
