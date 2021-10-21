@@ -7,6 +7,22 @@ Internationalization library for Minecraft.
 Because this library is simple to use and well documented. You can also use indexed arguments and our location system to
 heavily customize the output.
 
+## Gradle
+
+build.gradle
+
+**Make sure to include this library in your jar file!(Use gradle shadow plugin)**
+
+```groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.Earth2b2t:I18n:1.0.0'
+}
+```
+
 ## Tutorial(Bukkit)
 
 1. Create lang/XXX.properties in your resource directory (XXX can be ja_jp, en_us or whatever). These files are
