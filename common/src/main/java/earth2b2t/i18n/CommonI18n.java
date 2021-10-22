@@ -15,19 +15,24 @@ abstract public class CommonI18n implements I18n {
     abstract public Language getLanguage(UUID player);
 
     @Override
-    public void print(UUID player, String key, Object... args) {
+    public String plain(UUID player, String key, Object... args) {
+        return resolve(player, key).plain(args);
+    }
 
+    @Override
+    public void print(UUID player, String key, Object... args) {
+        resolve(player, key).print(player, args);
+    }
+
+    private Message resolve(UUID player, String key) {
         Language language = getLanguage(player);
         HashMap<String, Message> lang = cached.computeIfAbsent(language, k -> new HashMap<>());
         Message message = lang.get(key);
-        if (message != null) {
-            message.print(player, args);
-            return;
+        if (message == null) {
+            message = compile(language.getString(key));
+            lang.put(key, message);
         }
-
-        message = compile(language.getString(key));
-        lang.put(key, message);
-        message.print(player, args);
+        return message;
     }
 
     public Message compile(String key) {
@@ -105,22 +110,36 @@ abstract public class CommonI18n implements I18n {
             this.locations = locations;
         }
 
+        private String toString(int index, Object... args) {
+            int converted = indexes[index++];
+            if (converted >= args.length) {
+                return "{" + index + "}";
+            } else {
+                return args[converted].toString();
+            }
+        }
+
+        public String plain(Object... args) {
+            StringBuilder builder = new StringBuilder();
+            int index = 0;
+            for (String[] message : messages) {
+                for (int j = 0; j < message.length; j++) {
+                    builder.append(message[j]);
+                    if (j == message.length - 1) continue;
+                    builder.append(toString(index++, args));
+                }
+            }
+            return builder.toString();
+        }
+
         public void print(UUID player, Object... args) {
             int index = 0;
             for (int i = 0; i < messages.length; i++) {
                 StringBuilder builder = new StringBuilder();
                 for (int j = 0; j < messages[i].length; j++) {
                     builder.append(messages[i][j]);
-                    if (j != messages[i].length - 1) {
-                        int converted = indexes[index++];
-                        if (converted >= args.length) {
-                            builder.append('{');
-                            builder.append(converted);
-                            builder.append('}');
-                        } else {
-                            builder.append(args[converted]);
-                        }
-                    }
+                    if (j == messages[i].length - 1) continue;
+                    builder.append(toString(index++, args));
                 }
                 locations[i].print(player, builder.toString());
             }

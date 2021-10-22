@@ -21,13 +21,16 @@ public class CommonI18nTest {
         LocationMock mock = new LocationMock('c');
         SingleI18n i18n = new SingleI18n(language, mock);
 
-        i18n.print((UUID) null, "test1", "0", "1", "2");
+        i18n.print((UUID) null, "test1", 0, "1", 2);
+        assertEquals("2 0 1", i18n.plain((UUID) null, "test1", 0, "1", 2));
         assertEquals("2 0 1", mock.getMessage());
 
         i18n.print((UUID) null, "test2", null, "1");
+        assertEquals("{0}1", i18n.plain((UUID) null, "test2", null, "1"));
         assertEquals("{0}1", mock.getMessage());
 
         i18n.print((UUID) null, "test3", "0");
+        assertEquals("\\0", i18n.plain((UUID) null, "test3", "0"));
         assertEquals("\\0", mock.getMessage());
     }
 }
