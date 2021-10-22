@@ -26,7 +26,7 @@ public class BukkitI18n extends CommonI18n {
     }
 
     private final ArrayList<Language> languages = new ArrayList<>();
-    private Language fallback;
+    private Language defaultLanguage;
 
     private BukkitI18n(Plugin plugin) throws IOException {
         super(LOCATIONS, DEFAULT_LOCATION);
@@ -78,28 +78,21 @@ public class BukkitI18n extends CommonI18n {
         if (p != null) {
             String locale = p.getLocale();
             for (Language language : languages) {
-                if (language.getLocale().equals(locale)) {
-                    if (fallback == null) {
-                        return language;
-                    } else {
-                        return new MergedLanguage(language, fallback);
-                    }
-                }
+                if (language.getLocale().equals(locale)) return language;
             }
         }
-        return fallback;
+        return null;
     }
 
     @Override
     public Language getDefaultLanguage() {
-        if (fallback == null) throw new NullPointerException("Default language is not set");
-        return fallback;
+        return defaultLanguage;
     }
 
-    public void setFallbackLanguage(String lang) {
+    public void setDefaultLanguage(String lang) {
         for (Language language : languages) {
             if (language.getLocale().equals(lang)) {
-                fallback = language;
+                defaultLanguage = language;
                 return;
             }
         }

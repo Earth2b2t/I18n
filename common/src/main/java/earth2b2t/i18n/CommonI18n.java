@@ -23,7 +23,9 @@ abstract public class CommonI18n implements I18n {
 
     @Override
     public String plain(String key, Object... args) {
-        return resolve(getDefaultLanguage(), key).plain(args);
+        Language language = getDefaultLanguage();
+        if (language == null) throw new NullPointerException("Default language is not set");
+        return resolve(language, key).plain(args);
     }
 
     @Override
@@ -35,14 +37,20 @@ abstract public class CommonI18n implements I18n {
         HashMap<String, Message> lang = cached.computeIfAbsent(language, k -> new HashMap<>());
         Message message = lang.get(key);
         if (message == null) {
-            message = compile(language.getString(key));
+            String str = language.getString(key);
+            if (str == null) throw new IllegalArgumentException("Unknown translation key: " + key);
+            message = compile(str);
             lang.put(key, message);
         }
         return message;
     }
 
     private Message resolve(UUID player, String key) {
-        return resolve(getLanguage(player), key);
+        Language language = getLanguage(player);
+        Language defaultLanguage = getDefaultLanguage();
+        if (language == null || defaultLanguage == null) throw new NullPointerException("Default language is not set");
+        language = new MergedLanguage(language, defaultLanguage);
+        return resolve(language, key);
     }
 
     public Message compile(String key) {
