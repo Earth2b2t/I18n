@@ -90,7 +90,9 @@ public class BukkitI18n extends CommonI18n {
         return fallback;
     }
 
-    public Language getFallbackLanguage() {
+    @Override
+    public Language getDefaultLanguage() {
+        if (fallback == null) throw new NullPointerException("Default language is not set");
         return fallback;
     }
 

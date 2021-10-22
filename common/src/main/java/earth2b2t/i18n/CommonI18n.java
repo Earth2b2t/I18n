@@ -14,9 +14,16 @@ abstract public class CommonI18n implements I18n {
 
     abstract public Language getLanguage(UUID player);
 
+    abstract public Language getDefaultLanguage();
+
     @Override
     public String plain(UUID player, String key, Object... args) {
         return resolve(player, key).plain(args);
+    }
+
+    @Override
+    public String plain(String key, Object... args) {
+        return resolve(getDefaultLanguage(), key).plain(args);
     }
 
     @Override
@@ -24,8 +31,7 @@ abstract public class CommonI18n implements I18n {
         resolve(player, key).print(player, args);
     }
 
-    private Message resolve(UUID player, String key) {
-        Language language = getLanguage(player);
+    private Message resolve(Language language, String key) {
         HashMap<String, Message> lang = cached.computeIfAbsent(language, k -> new HashMap<>());
         Message message = lang.get(key);
         if (message == null) {
@@ -33,6 +39,10 @@ abstract public class CommonI18n implements I18n {
             lang.put(key, message);
         }
         return message;
+    }
+
+    private Message resolve(UUID player, String key) {
+        return resolve(getLanguage(player), key);
     }
 
     public Message compile(String key) {
