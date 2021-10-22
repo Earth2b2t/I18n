@@ -48,8 +48,8 @@ abstract public class CommonI18n implements I18n {
     private Message resolve(UUID player, String key) {
         Language language = getLanguage(player);
         Language defaultLanguage = getDefaultLanguage();
-        if (language == null || defaultLanguage == null) throw new NullPointerException("Default language is not set");
-        language = new MergedLanguage(language, defaultLanguage);
+        if (language == null && defaultLanguage == null) throw new NullPointerException("Default language is not set");
+        if (language == null) language = defaultLanguage;
         return resolve(language, key);
     }
 
