@@ -78,7 +78,7 @@ public class BukkitI18n extends CommonI18n {
         if (p != null) {
             String locale = p.getLocale();
             for (Language language : languages) {
-                if (language.getLocale().equals(locale)) return language;
+                if (language.getLocale().equalsIgnoreCase(locale)) return language;
             }
         }
         return null;
