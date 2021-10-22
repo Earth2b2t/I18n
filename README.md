@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.Earth2b2t.I18n:i18n-bukkit:1.0.0'
+    implementation 'com.github.Earth2b2t.I18n:i18n-bukkit:1.1.0'
 }
 ```
 
