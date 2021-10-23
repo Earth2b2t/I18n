@@ -129,9 +129,9 @@ abstract public class CommonI18n implements I18n {
         }
 
         private String toString(int index, Object... args) {
-            int converted = indexes[index++];
+            int converted = indexes[index];
             if (converted >= args.length) {
-                return "{" + index + "}";
+                return "{" + converted + "}";
             } else {
                 return args[converted].toString();
             }
