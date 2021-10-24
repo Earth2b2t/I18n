@@ -52,6 +52,7 @@ public class BukkitI18n extends CommonI18n {
             builder.append(key);
             builder.append('=');
             builder.append(properties.getProperty(key));
+            builder.append('\n');
         }
 
         return builder.toString();
