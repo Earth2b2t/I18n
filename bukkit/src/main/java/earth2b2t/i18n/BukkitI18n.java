@@ -28,6 +28,35 @@ public class BukkitI18n extends CommonI18n {
     private final ArrayList<Language> languages = new ArrayList<>();
     private Language defaultLanguage;
 
+    /**
+     * Search for missing translation keys and add them.
+     *
+     * @return fully updated properties
+     */
+    private String updateProperties(Plugin plugin, ClassLoader classLoader, String entry) throws IOException {
+        Properties latestProperties = new Properties();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(entry), StandardCharsets.UTF_8))) {
+            latestProperties.load(reader);
+        }
+
+        File currentFile = new File(plugin.getDataFolder(), entry);
+        Properties properties = new Properties(latestProperties);
+        if (currentFile.exists()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(currentFile), StandardCharsets.UTF_8))) {
+                properties.load(reader);
+            }
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (String key : properties.stringPropertyNames()) {
+            builder.append(key);
+            builder.append('=');
+            builder.append(properties.getProperty(key));
+        }
+
+        return builder.toString();
+    }
+
     private BukkitI18n(Plugin plugin) throws IOException {
         super(LOCATIONS, DEFAULT_LOCATION);
         ClassLoader classLoader = plugin.getClass().getClassLoader();
@@ -49,16 +78,10 @@ public class BukkitI18n extends CommonI18n {
 
         // copy lang directory
         for (String entry : entries) {
-            try (BufferedInputStream in = new BufferedInputStream(classLoader.getResourceAsStream(entry))) {
-                File localeFile = new File(plugin.getDataFolder(), entry);
-                if (localeFile.exists()) continue;
-                localeFile.createNewFile();
-                try (OutputStream out = new BufferedOutputStream(new FileOutputStream(localeFile))) {
-                    int len;
-                    while ((len = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, len);
-                    }
-                }
+            String properties = updateProperties(plugin, classLoader, entry);
+            File propertiesFile = new File(plugin.getDataFolder(), entry);
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), StandardCharsets.UTF_8))) {
+                writer.write(properties);
             }
         }
 
