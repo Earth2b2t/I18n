@@ -33,25 +33,55 @@ public class BukkitI18n extends CommonI18n {
      *
      * @return fully updated properties
      */
-    private String updateProperties(Plugin plugin, ClassLoader classLoader, String entry) throws IOException {
-        Properties latestProperties = new Properties();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(entry), StandardCharsets.UTF_8))) {
-            latestProperties.load(reader);
+    private String updateProperties(Plugin plugin, ClassLoader classLoader, String lang) throws IOException {
+
+        // check file existence
+        File currentFile = new File(plugin.getDataFolder(), lang);
+        if(!currentFile.exists()) {
+            StringBuilder builder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(lang), StandardCharsets.UTF_8))) {
+                String line;
+                while((line = reader.readLine()) != null) {
+                    builder.append(line);
+                    builder.append('\n');
+                }
+            }
+            return builder.toString();
         }
 
-        File currentFile = new File(plugin.getDataFolder(), entry);
-        Properties properties = new Properties(latestProperties);
-        if (currentFile.exists()) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(currentFile), StandardCharsets.UTF_8))) {
-                properties.load(reader);
+        // load latest
+        LinkedHashMap<String, String> values = new LinkedHashMap<>();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(lang), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] split = line.split("=", 2);
+                if (split.length < 2) continue;
+                values.put(split[0], split[1]);
             }
         }
 
+        // load current
         StringBuilder builder = new StringBuilder();
-        for (String key : properties.stringPropertyNames()) {
-            builder.append(key);
+        Properties properties = new Properties();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(currentFile), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+                builder.append('\n');
+            }
+        }
+        properties.load(new StringReader(builder.toString()));
+
+        // update
+        if (!builder.toString().endsWith("\n") && builder.length() != 0) {
+            builder.append("\n");
+        }
+
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            if (properties.containsKey(entry)) continue;
+            builder.append(entry.getKey());
             builder.append('=');
-            builder.append(properties.getProperty(key));
+            builder.append(entry.getValue());
             builder.append('\n');
         }
 
@@ -61,7 +91,6 @@ public class BukkitI18n extends CommonI18n {
     private BukkitI18n(Plugin plugin) throws IOException {
         super(LOCATIONS, DEFAULT_LOCATION);
         ClassLoader classLoader = plugin.getClass().getClassLoader();
-        byte[] buffer = new byte[8192];
         File langDir = new File(plugin.getDataFolder(), "lang");
         langDir.mkdirs();
 
