@@ -73,7 +73,9 @@ public class BukkitI18n extends CommonI18n {
         ArrayList<String> entries = new ArrayList<>();
         ZipFile jarFile = new ZipFile(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
         for (ZipEntry entry : Collections.list(jarFile.entries())) {
-            if (entry.getName().startsWith("lang/")) entries.add(entry.getName());
+            if (entry.getName().startsWith("lang/") && entry.getName().endsWith(".properties")) {
+                entries.add(entry.getName());
+            }
         }
 
         // copy lang directory
