@@ -78,7 +78,7 @@ public class BukkitI18n extends CommonI18n {
         }
 
         for (Map.Entry<String, String> entry : values.entrySet()) {
-            if (properties.containsKey(entry)) continue;
+            if (properties.containsKey(entry.getKey())) continue;
             builder.append(entry.getKey());
             builder.append('=');
             builder.append(entry.getValue());
