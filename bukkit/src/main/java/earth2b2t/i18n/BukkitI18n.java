@@ -1,6 +1,7 @@
 package earth2b2t.i18n;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,11 +38,11 @@ public class BukkitI18n extends CommonI18n {
 
         // check file existence
         File currentFile = new File(plugin.getDataFolder(), lang);
-        if(!currentFile.exists()) {
+        if (!currentFile.exists()) {
             StringBuilder builder = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(lang), StandardCharsets.UTF_8))) {
                 String line;
-                while((line = reader.readLine()) != null) {
+                while ((line = reader.readLine()) != null) {
                     builder.append(line);
                     builder.append('\n');
                 }
@@ -137,6 +138,16 @@ public class BukkitI18n extends CommonI18n {
             }
         }
         return null;
+    }
+
+    @Override
+    public String plain(String key, Object... args) {
+        return ChatColor.translateAlternateColorCodes('&', super.plain(key, args));
+    }
+
+    @Override
+    public String plain(UUID player, String key, Object... args) {
+        return ChatColor.translateAlternateColorCodes('&', super.plain(player, key, args));
     }
 
     @Override
