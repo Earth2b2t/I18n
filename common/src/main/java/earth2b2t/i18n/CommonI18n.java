@@ -38,6 +38,7 @@ abstract public class CommonI18n implements I18n {
         Message message = lang.get(key);
         if (message == null) {
             String str = language.getString(key);
+            if (str == null) str = getDefaultLanguage().getString(key);
             if (str == null) throw new IllegalArgumentException("Unknown translation key: " + key);
             message = compile(str);
             lang.put(key, message);
