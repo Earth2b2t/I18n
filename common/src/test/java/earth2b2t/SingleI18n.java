@@ -21,4 +21,9 @@ public class SingleI18n extends CommonI18n {
         return language;
     }
 
+    @Override
+    public Language getDefaultLanguage() {
+        return language;
+    }
+
 }
