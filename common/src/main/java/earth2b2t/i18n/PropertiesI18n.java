@@ -28,13 +28,12 @@ abstract public class PropertiesI18n extends CommonI18n {
 
     private final ArrayList<Language> languages = new ArrayList<>();
     private final File dataFolder;
-    private final LanguageProvider languageProvider;
+    private LanguageProvider languageProvider;
     private Language defaultLanguage;
 
     protected PropertiesI18n(File dataFolder, Class<?> loader, Collection<Location> locations, Location defaultLocation) throws IOException {
         super(locations, defaultLocation);
         this.dataFolder = dataFolder;
-        this.languageProvider = newLanguageProvider();
         File langDir = new File(dataFolder, "lang");
         langDir.mkdirs();
 
@@ -166,6 +165,9 @@ abstract public class PropertiesI18n extends CommonI18n {
 
     @Override
     public LanguageProvider getLanguageProvider() {
+        if (languageProvider == null) {
+            languageProvider = newLanguageProvider();
+        }
         return languageProvider;
     }
 }
