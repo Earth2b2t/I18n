@@ -1,4 +1,4 @@
-package earth2b2t.bukkit;
+package earth2b2t.i18n.bukkit;
 
 import earth2b2t.i18n.Location;
 import org.bukkit.Bukkit;
@@ -7,15 +7,16 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class SubTitleLocation implements Location {
+public class ChatLocation implements Location {
+
     @Override
     public void print(UUID player, String msg) {
         Player p = Bukkit.getPlayer(player);
-        if (p != null) p.sendTitle(null, ChatColor.translateAlternateColorCodes('&', msg), 5, 30, 5);
+        if (p != null) p.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
     }
 
     @Override
     public char getPrefix() {
-        return 's';
+        return 'c';
     }
 }

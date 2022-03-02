@@ -36,7 +36,7 @@ Main.java
 ```java
 package earth2b2t.i18n.test;
 
-import earth2b2t.i18n.BukkitI18n;
+import earth2b2t.BukkitI18n;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -58,7 +58,7 @@ JoinListener.java
 ```java
 package earth2b2t.i18n.test;
 
-import earth2b2t.i18n.BukkitI18n;
+import earth2b2t.BukkitI18n;
 import earth2b2t.i18n.I18n;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

@@ -1,4 +1,4 @@
-package earth2b2t.bukkit;
+package earth2b2t.i18n.bukkit;
 
 import earth2b2t.i18n.LanguageProvider;
 import earth2b2t.i18n.RemoteLanguageProvider;

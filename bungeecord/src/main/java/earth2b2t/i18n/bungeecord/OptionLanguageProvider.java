@@ -1,8 +1,8 @@
-package earth2b2t.bukkit;
+package earth2b2t.i18n.bungeecord;
 
 import earth2b2t.i18n.LanguageProvider;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,9 +17,9 @@ public class OptionLanguageProvider implements LanguageProvider {
 
     @Override
     public List<String> get(UUID player) {
-        Player p = Bukkit.getPlayer(player);
+        ProxiedPlayer p = ProxyServer.getInstance().getPlayer(player);
         if (p != null) {
-            return Collections.singletonList(p.getLocale());
+            return Collections.singletonList(p.getLocale().getLanguage());
         }
 
         return Collections.emptyList();

@@ -1,4 +1,4 @@
-package earth2b2t.bungeecord;
+package earth2b2t.i18n.bungeecord;
 
 import earth2b2t.i18n.LanguageProvider;
 import earth2b2t.i18n.RemoteLanguageProvider;

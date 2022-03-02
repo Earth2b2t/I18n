@@ -1,4 +1,4 @@
-package earth2b2t.bungeecord;
+package earth2b2t.i18n.bungeecord;
 
 import earth2b2t.i18n.Location;
 import net.md_5.bungee.api.ChatColor;

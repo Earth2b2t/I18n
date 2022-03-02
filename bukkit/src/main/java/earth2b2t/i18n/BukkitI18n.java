@@ -1,15 +1,10 @@
-package earth2b2t;
+package earth2b2t.i18n;
 
-import earth2b2t.bukkit.CachedLanguageProvider;
-import earth2b2t.bukkit.ChatLocation;
-import earth2b2t.bukkit.OptionLanguageProvider;
-import earth2b2t.bukkit.SubTitleLocation;
-import earth2b2t.bukkit.TitleLocation;
-import earth2b2t.i18n.FileLanguageProvider;
-import earth2b2t.i18n.LanguageProvider;
-import earth2b2t.i18n.Location;
-import earth2b2t.i18n.PropertiesI18n;
-import earth2b2t.i18n.RemoteLanguageProviderAdapter;
+import earth2b2t.i18n.bukkit.CachedLanguageProvider;
+import earth2b2t.i18n.bukkit.ChatLocation;
+import earth2b2t.i18n.bukkit.OptionLanguageProvider;
+import earth2b2t.i18n.bukkit.SubTitleLocation;
+import earth2b2t.i18n.bukkit.TitleLocation;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 

@@ -1,15 +1,10 @@
-package earth2b2t;
+package earth2b2t.i18n;
 
-import earth2b2t.bungeecord.CachedLanguageProvider;
-import earth2b2t.bungeecord.ChatLocation;
-import earth2b2t.bungeecord.OptionLanguageProvider;
-import earth2b2t.bungeecord.SubTitleLocation;
-import earth2b2t.bungeecord.TitleLocation;
-import earth2b2t.i18n.FileLanguageProvider;
-import earth2b2t.i18n.LanguageProvider;
-import earth2b2t.i18n.Location;
-import earth2b2t.i18n.PropertiesI18n;
-import earth2b2t.i18n.RemoteLanguageProviderAdapter;
+import earth2b2t.i18n.bungeecord.SubTitleLocation;
+import earth2b2t.i18n.bungeecord.TitleLocation;
+import earth2b2t.i18n.bungeecord.CachedLanguageProvider;
+import earth2b2t.i18n.bungeecord.ChatLocation;
+import earth2b2t.i18n.bungeecord.OptionLanguageProvider;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
