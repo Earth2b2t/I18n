@@ -1,20 +1,30 @@
 package earth2b2t.i18n;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 abstract public class CommonI18n implements I18n {
     private final HashSet<Location> locations;
     private final Location defaultLocation;
-    private final HashMap<Language, HashMap<String, Message>> cached = new HashMap<>();
+    private final HashMap<Language, HashMap<String, Message>> cachedMessages = new HashMap<>();
+    private final WeakHashMap<UUID, Language> cachedUsers = new WeakHashMap<>();
 
     public CommonI18n(Collection<Location> locations, Location defaultLocation) {
         this.locations = new HashSet<>(locations);
         this.defaultLocation = defaultLocation;
     }
 
-    abstract public Language getLanguage(UUID player);
+    abstract public Collection<Language> getLanguages();
 
     abstract public Language getDefaultLanguage();
+
+    abstract public LanguageProvider getLanguageProvider();
 
     @Override
     public String plain(UUID player, String key, Object... args) {
@@ -34,7 +44,7 @@ abstract public class CommonI18n implements I18n {
     }
 
     private Message resolve(Language language, String key) {
-        HashMap<String, Message> lang = cached.computeIfAbsent(language, k -> new HashMap<>());
+        HashMap<String, Message> lang = cachedMessages.computeIfAbsent(language, k -> new HashMap<>());
         Message message = lang.get(key);
         if (message == null) {
             String str = language.getString(key);
@@ -47,7 +57,21 @@ abstract public class CommonI18n implements I18n {
     }
 
     private Message resolve(UUID player, String key) {
-        Language language = getLanguage(player);
+
+        Language language = cachedUsers.computeIfAbsent(player, it -> {
+            HashMap<String, Language> locales = new HashMap<>();
+            for (Language lang : getLanguages()) {
+                locales.put(lang.getLocale(), lang);
+            }
+
+            List<String> list = getLanguageProvider().get(player);
+            return locales.entrySet().stream()
+                    .filter(entry -> list.contains(entry.getKey()))
+                    .findAny()
+                    .map(Map.Entry::getValue)
+                    .orElse(null);
+        });
+
         Language defaultLanguage = getDefaultLanguage();
         if (language == null && defaultLanguage == null) throw new NullPointerException("Default language is not set");
         if (language == null) language = defaultLanguage;

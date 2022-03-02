@@ -1,3 +1,2 @@
-include 'common', 'bukkit'
+include 'common', 'bukkit', 'bungeecord'
 rootProject.name = 'i18n'
-
