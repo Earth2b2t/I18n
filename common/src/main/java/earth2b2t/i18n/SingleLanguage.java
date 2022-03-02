@@ -12,6 +12,14 @@ public class SingleLanguage implements Language {
         this.map = map;
     }
 
+    public static Language fromProperties(String locale, Properties properties) {
+        HashMap<String, String> map = new HashMap<>();
+        for (String name : properties.stringPropertyNames()) {
+            map.put(name, properties.getProperty(name));
+        }
+        return new SingleLanguage(locale, map);
+    }
+
     @Override
     public String getLocale() {
         return locale;
@@ -20,13 +28,5 @@ public class SingleLanguage implements Language {
     @Override
     public String getString(String key) {
         return map.get(key);
-    }
-
-    public static Language fromProperties(String locale, Properties properties) {
-        HashMap<String, String> map = new HashMap<>();
-        for (String name : properties.stringPropertyNames()) {
-            map.put(name, properties.getProperty(name));
-        }
-        return new SingleLanguage(locale, map);
     }
 }

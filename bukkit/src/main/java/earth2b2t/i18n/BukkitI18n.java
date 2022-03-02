@@ -1,15 +1,31 @@
 package earth2b2t.i18n;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -27,7 +43,69 @@ public class BukkitI18n extends CommonI18n {
     }
 
     private final ArrayList<Language> languages = new ArrayList<>();
+    private final CachedLanguageProvider languageProvider;
     private Language defaultLanguage;
+
+    private BukkitI18n(Plugin plugin) throws IOException {
+        super(LOCATIONS, DEFAULT_LOCATION);
+        FileLanguageProvider provider = new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"));
+        this.languageProvider = CachedLanguageProvider.create(plugin, new RemoteLanguageProviderAdapter(provider));
+        ClassLoader classLoader = plugin.getClass().getClassLoader();
+        File langDir = new File(plugin.getDataFolder(), "lang");
+        langDir.mkdirs();
+
+        URL url = classLoader.getResource("lang");
+        if (url == null) {
+            throw new IllegalArgumentException("The plugin doesn't have lang directory");
+        }
+
+        // hacky way to list lang directory
+        ArrayList<String> entries = new ArrayList<>();
+        ZipFile jarFile = new ZipFile(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+        for (ZipEntry entry : Collections.list(jarFile.entries())) {
+            if (entry.getName().startsWith("lang/") && entry.getName().endsWith(".properties")) {
+                entries.add(entry.getName());
+            }
+        }
+
+        // copy lang directory
+        for (String entry : entries) {
+            String properties = updateProperties(plugin, classLoader, entry);
+            File propertiesFile = new File(plugin.getDataFolder(), entry);
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), StandardCharsets.UTF_8))) {
+                writer.write(properties);
+            }
+        }
+
+        // load languages
+        for (File file : langDir.listFiles()) {
+            Properties properties = new Properties();
+            try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+                properties.load(in);
+            }
+            languages.add(SingleLanguage.fromProperties(file.getName().replace(".properties", ""), properties));
+        }
+    }
+
+    public static BukkitI18n get(Class<?> c) {
+        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(c);
+        if (plugin == null) {
+            throw new IllegalArgumentException("Provided class is not a part of any plugin: " + c.getCanonicalName());
+        }
+        return get(plugin);
+    }
+
+    public static BukkitI18n get(Plugin plugin) {
+        BukkitI18n i18n = cached.get(plugin);
+        if (i18n != null) return i18n;
+        try {
+            i18n = new BukkitI18n(plugin);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        cached.put(plugin, i18n);
+        return i18n;
+    }
 
     /**
      * Search for missing translation keys and add them.
@@ -89,55 +167,9 @@ public class BukkitI18n extends CommonI18n {
         return builder.toString();
     }
 
-    private BukkitI18n(Plugin plugin) throws IOException {
-        super(LOCATIONS, DEFAULT_LOCATION);
-        ClassLoader classLoader = plugin.getClass().getClassLoader();
-        File langDir = new File(plugin.getDataFolder(), "lang");
-        langDir.mkdirs();
-
-        URL url = classLoader.getResource("lang");
-        if (url == null) {
-            throw new IllegalArgumentException("The plugin doesn't have lang directory");
-        }
-
-        // hacky way to list lang directory
-        ArrayList<String> entries = new ArrayList<>();
-        ZipFile jarFile = new ZipFile(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-        for (ZipEntry entry : Collections.list(jarFile.entries())) {
-            if (entry.getName().startsWith("lang/") && entry.getName().endsWith(".properties")) {
-                entries.add(entry.getName());
-            }
-        }
-
-        // copy lang directory
-        for (String entry : entries) {
-            String properties = updateProperties(plugin, classLoader, entry);
-            File propertiesFile = new File(plugin.getDataFolder(), entry);
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), StandardCharsets.UTF_8))) {
-                writer.write(properties);
-            }
-        }
-
-        // load languages
-        for (File file : langDir.listFiles()) {
-            Properties properties = new Properties();
-            try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
-                properties.load(in);
-            }
-            languages.add(SingleLanguage.fromProperties(file.getName().replace(".properties", ""), properties));
-        }
-    }
-
     @Override
-    public Language getLanguage(UUID player) {
-        Player p = Bukkit.getPlayer(player);
-        if (p != null) {
-            String locale = p.getLocale();
-            for (Language language : languages) {
-                if (language.getLocale().equalsIgnoreCase(locale)) return language;
-            }
-        }
-        return null;
+    public ArrayList<Language> getLanguages() {
+        return languages;
     }
 
     @Override
@@ -165,23 +197,8 @@ public class BukkitI18n extends CommonI18n {
         throw new IllegalArgumentException("Could not find the language: " + lang);
     }
 
-    public static BukkitI18n get(Class<?> c) {
-        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(c);
-        if (plugin == null) {
-            throw new IllegalArgumentException("Provided class is not a part of any plugin: " + c.getCanonicalName());
-        }
-        return get(plugin);
-    }
-
-    public static BukkitI18n get(Plugin plugin) {
-        BukkitI18n i18n = cached.get(plugin);
-        if (i18n != null) return i18n;
-        try {
-            i18n = new BukkitI18n(plugin);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        cached.put(plugin, i18n);
-        return i18n;
+    @Override
+    public LanguageProvider getLanguageProvider() {
+        return languageProvider;
     }
 }
