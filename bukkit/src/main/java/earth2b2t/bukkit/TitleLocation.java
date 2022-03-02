@@ -1,5 +1,6 @@
-package earth2b2t.i18n;
+package earth2b2t.bukkit;
 
+import earth2b2t.i18n.Location;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

@@ -1,8 +1,6 @@
 package earth2b2t.i18n;
 
 import org.bukkit.ChatColor;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,46 +12,33 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class BukkitI18n extends CommonI18n {
-
-    /* This has to be WeakHashMap, as memory-leak issues might arise on plugin unloading */
-    private static final WeakHashMap<Plugin, BukkitI18n> cached = new WeakHashMap<>();
-    private static final Collection<Location> LOCATIONS;
-    private static final Location DEFAULT_LOCATION = new ChatLocation();
-
-    static {
-        LOCATIONS = Collections.unmodifiableCollection(Arrays.asList(
-                DEFAULT_LOCATION, new TitleLocation(), new SubTitleLocation()
-        ));
-    }
+abstract public class PropertiesI18n extends CommonI18n {
 
     private final ArrayList<Language> languages = new ArrayList<>();
-    private final CachedLanguageProvider languageProvider;
+    private final File dataFolder;
+    private final LanguageProvider languageProvider;
     private Language defaultLanguage;
 
-    private BukkitI18n(Plugin plugin) throws IOException {
-        super(LOCATIONS, DEFAULT_LOCATION);
-        FileLanguageProvider provider = new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"));
-        this.languageProvider = CachedLanguageProvider.create(plugin, new RemoteLanguageProviderAdapter(provider));
-        ClassLoader classLoader = plugin.getClass().getClassLoader();
-        File langDir = new File(plugin.getDataFolder(), "lang");
+    protected PropertiesI18n(File dataFolder, Class<?> loader, Collection<Location> locations, Location defaultLocation) throws IOException {
+        super(locations, defaultLocation);
+        this.dataFolder = dataFolder;
+        this.languageProvider = newLanguageProvider();
+        File langDir = new File(dataFolder, "lang");
         langDir.mkdirs();
 
+        ClassLoader classLoader = loader.getClassLoader();
         URL url = classLoader.getResource("lang");
         if (url == null) {
             throw new IllegalArgumentException("The plugin doesn't have lang directory");
@@ -61,7 +46,7 @@ public class BukkitI18n extends CommonI18n {
 
         // hacky way to list lang directory
         ArrayList<String> entries = new ArrayList<>();
-        ZipFile jarFile = new ZipFile(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+        ZipFile jarFile = new ZipFile(loader.getProtectionDomain().getCodeSource().getLocation().getPath());
         for (ZipEntry entry : Collections.list(jarFile.entries())) {
             if (entry.getName().startsWith("lang/") && entry.getName().endsWith(".properties")) {
                 entries.add(entry.getName());
@@ -70,8 +55,8 @@ public class BukkitI18n extends CommonI18n {
 
         // copy lang directory
         for (String entry : entries) {
-            String properties = updateProperties(plugin, classLoader, entry);
-            File propertiesFile = new File(plugin.getDataFolder(), entry);
+            String properties = updateProperties(classLoader, entry);
+            File propertiesFile = new File(dataFolder, entry);
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), StandardCharsets.UTF_8))) {
                 writer.write(properties);
             }
@@ -87,35 +72,17 @@ public class BukkitI18n extends CommonI18n {
         }
     }
 
-    public static BukkitI18n get(Class<?> c) {
-        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(c);
-        if (plugin == null) {
-            throw new IllegalArgumentException("Provided class is not a part of any plugin: " + c.getCanonicalName());
-        }
-        return get(plugin);
-    }
-
-    public static BukkitI18n get(Plugin plugin) {
-        BukkitI18n i18n = cached.get(plugin);
-        if (i18n != null) return i18n;
-        try {
-            i18n = new BukkitI18n(plugin);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        cached.put(plugin, i18n);
-        return i18n;
-    }
+    abstract public LanguageProvider newLanguageProvider();
 
     /**
      * Search for missing translation keys and add them.
      *
      * @return fully updated properties
      */
-    private String updateProperties(Plugin plugin, ClassLoader classLoader, String lang) throws IOException {
+    private String updateProperties(ClassLoader classLoader, String lang) throws IOException {
 
         // check file existence
-        File currentFile = new File(plugin.getDataFolder(), lang);
+        File currentFile = new File(dataFolder, lang);
         if (!currentFile.exists()) {
             StringBuilder builder = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(classLoader.getResourceAsStream(lang), StandardCharsets.UTF_8))) {

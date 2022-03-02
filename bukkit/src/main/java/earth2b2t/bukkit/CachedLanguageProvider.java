@@ -1,5 +1,7 @@
-package earth2b2t.i18n;
+package earth2b2t.bukkit;
 
+import earth2b2t.i18n.LanguageProvider;
+import earth2b2t.i18n.RemoteLanguageProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -32,7 +34,6 @@ public class CachedLanguageProvider implements LanguageProvider {
     public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
 
         OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
-
         CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
 
         Bukkit.getPluginManager().registerEvents(new Listener() {
