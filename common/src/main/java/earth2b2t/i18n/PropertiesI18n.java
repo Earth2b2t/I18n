@@ -63,6 +63,8 @@ abstract public class PropertiesI18n extends CommonI18n {
 
         // load languages
         for (File file : langDir.listFiles()) {
+            if (!file.isFile()) continue;
+            if (!file.getName().endsWith(".properties")) continue;
             Properties properties = new Properties();
             try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
                 properties.load(in);
