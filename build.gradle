@@ -4,7 +4,6 @@ plugins {
 }
 
 group 'earth2b2t'
-version '1.2.0'
 
 subprojects {
     apply plugin: 'maven-publish'

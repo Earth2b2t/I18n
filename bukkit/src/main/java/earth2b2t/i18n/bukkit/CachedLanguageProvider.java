@@ -4,13 +4,13 @@ import earth2b2t.i18n.LanguageProvider;
 import earth2b2t.i18n.RemoteLanguageProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
-public class CachedLanguageProvider implements LanguageProvider {
+public class CachedLanguageProvider implements LanguageProvider, Closeable {
 
     private final Plugin plugin;
     private final RemoteLanguageProvider languageProvider;
@@ -42,7 +42,10 @@ public class CachedLanguageProvider implements LanguageProvider {
 
     @Override
     public void update(UUID player, String preferred) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> languageProvider.update(player, preferred));
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            languageProvider.update(player, preferred);
+            putLocale(player, languageProvider.get(player));
+        });
     }
 
     @Override
@@ -50,6 +53,11 @@ public class CachedLanguageProvider implements LanguageProvider {
         List<String> result = locales.get(player);
         if (result == null || result.isEmpty()) result = fallback.get(player);
         return result;
+    }
+
+    @Override
+    public void close() throws IOException {
+        languageProvider.close();
     }
 
     public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
@@ -67,12 +75,6 @@ public class CachedLanguageProvider implements LanguageProvider {
             @EventHandler
             public void onPlayerQuit(PlayerQuitEvent e) {
                 provider.removeLocale(e.getPlayer().getUniqueId());
-            }
-
-            @EventHandler
-            public void onPluginDisable(PluginDisableEvent e) {
-                if (plugin != e.getPlugin()) return;
-                HandlerList.unregisterAll(this);
             }
 
         }, plugin);

@@ -9,6 +9,8 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class CachedLanguageProvider implements LanguageProvider {
+public class CachedLanguageProvider implements LanguageProvider, Closeable {
 
     private final Plugin plugin;
     private final RemoteLanguageProvider languageProvider;
@@ -41,7 +43,10 @@ public class CachedLanguageProvider implements LanguageProvider {
 
     @Override
     public void update(UUID player, String preferred) {
-        ProxyServer.getInstance().getScheduler().schedule(plugin, () -> languageProvider.update(player, preferred), 0, TimeUnit.MILLISECONDS);
+        ProxyServer.getInstance().getScheduler().schedule(plugin, () -> {
+            languageProvider.update(player, preferred);
+            putLocale(player, languageProvider.get(player));
+        }, 0, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -49,6 +54,11 @@ public class CachedLanguageProvider implements LanguageProvider {
         List<String> result = locales.get(player);
         if (result == null || result.isEmpty()) result = fallback.get(player);
         return result;
+    }
+
+    @Override
+    public void close() throws IOException {
+        languageProvider.close();
     }
 
     public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
