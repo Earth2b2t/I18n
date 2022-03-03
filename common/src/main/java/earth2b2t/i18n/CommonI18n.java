@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 abstract public class CommonI18n implements I18n {
@@ -63,11 +62,9 @@ abstract public class CommonI18n implements I18n {
 
         List<String> list = getLanguageProvider().get(player);
         Language language = null;
-        for (Map.Entry<String, Language> locale : locales.entrySet()) {
-            if (list.contains(locale.getKey())) {
-                language = locale.getValue();
-                break;
-            }
+        for (String str : list) {
+            language = locales.get(str);
+            if (language != null) break;
         }
 
         Language defaultLanguage = getDefaultLanguage();
