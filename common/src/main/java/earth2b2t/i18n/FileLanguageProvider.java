@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class FileLanguageProvider implements LanguageProvider {
 
@@ -24,7 +24,7 @@ public class FileLanguageProvider implements LanguageProvider {
 
     @Override
     public synchronized void update(UUID player, String preferred) {
-        List<String> list = new ArrayList<>(get(player));
+        List<String> list = get(player).stream().distinct().collect(Collectors.toList());
         list.add(0, preferred);
 
         String contents = gson.toJson(new LocaleData(player, list.subList(0, Math.min(list.size(), MAX_SIZE))));

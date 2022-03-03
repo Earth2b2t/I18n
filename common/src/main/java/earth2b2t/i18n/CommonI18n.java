@@ -62,11 +62,13 @@ abstract public class CommonI18n implements I18n {
         }
 
         List<String> list = getLanguageProvider().get(player);
-        Language language = locales.entrySet().stream()
-                .filter(entry -> list.contains(entry.getKey()))
-                .findFirst()
-                .map(Map.Entry::getValue)
-                .orElse(null);
+        Language language = null;
+        for (Map.Entry<String, Language> locale : locales.entrySet()) {
+            if (list.contains(locale.getKey())) {
+                language = locale.getValue();
+                break;
+            }
+        }
 
         Language defaultLanguage = getDefaultLanguage();
         if (language == null && defaultLanguage == null) throw new NullPointerException("Default language is not set");
