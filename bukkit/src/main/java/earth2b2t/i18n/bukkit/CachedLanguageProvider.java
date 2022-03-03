@@ -3,6 +3,7 @@ package earth2b2t.i18n.bukkit;
 import earth2b2t.i18n.LanguageProvider;
 import earth2b2t.i18n.RemoteLanguageProvider;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -66,6 +67,12 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
 
         OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
         CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                provider.putLocale(player.getUniqueId(), remoteLanguageProvider.get(player.getUniqueId()));
+            });
+        }
 
         Bukkit.getPluginManager().registerEvents(new Listener() {
 
