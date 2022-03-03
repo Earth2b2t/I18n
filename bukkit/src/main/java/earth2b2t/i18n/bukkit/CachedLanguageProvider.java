@@ -15,10 +15,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 public class CachedLanguageProvider implements LanguageProvider, Closeable {
 
@@ -31,7 +31,7 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
         this.plugin = plugin;
         this.languageProvider = languageProvider;
         this.fallback = fallback;
-        this.locales = Collections.synchronizedMap(new WeakHashMap<>());
+        this.locales = Collections.synchronizedMap(new HashMap<>());
     }
 
     public void putLocale(UUID uuid, List<String> locale) {
