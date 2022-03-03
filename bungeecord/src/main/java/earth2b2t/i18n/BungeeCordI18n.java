@@ -1,10 +1,9 @@
 package earth2b2t.i18n;
 
-import earth2b2t.i18n.bungeecord.SubTitleLocation;
-import earth2b2t.i18n.bungeecord.TitleLocation;
 import earth2b2t.i18n.bungeecord.CachedLanguageProvider;
 import earth2b2t.i18n.bungeecord.ChatLocation;
-import earth2b2t.i18n.bungeecord.OptionLanguageProvider;
+import earth2b2t.i18n.bungeecord.SubTitleLocation;
+import earth2b2t.i18n.bungeecord.TitleLocation;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -70,8 +69,7 @@ public class BungeeCordI18n extends PropertiesI18n {
 
     @Override
     public LanguageProvider newLanguageProvider() {
-        return new CachedLanguageProvider(plugin,
-                new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))),
-                new OptionLanguageProvider());
+        return CachedLanguageProvider.create(plugin,
+                new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))));
     }
 }

@@ -2,7 +2,6 @@ package earth2b2t.i18n;
 
 import earth2b2t.i18n.bukkit.CachedLanguageProvider;
 import earth2b2t.i18n.bukkit.ChatLocation;
-import earth2b2t.i18n.bukkit.OptionLanguageProvider;
 import earth2b2t.i18n.bukkit.SubTitleLocation;
 import earth2b2t.i18n.bukkit.TitleLocation;
 import org.bukkit.plugin.Plugin;
@@ -57,8 +56,7 @@ public class BukkitI18n extends PropertiesI18n {
 
     @Override
     public LanguageProvider newLanguageProvider() {
-        return new CachedLanguageProvider(plugin,
-                new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))),
-                new OptionLanguageProvider());
+        return CachedLanguageProvider.create(plugin,
+                new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))));
     }
 }
