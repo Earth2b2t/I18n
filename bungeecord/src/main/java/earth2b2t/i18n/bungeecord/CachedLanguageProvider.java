@@ -4,6 +4,7 @@ import earth2b2t.i18n.LanguageProvider;
 import earth2b2t.i18n.RemoteLanguageProvider;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.event.LoginEvent;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -30,25 +31,12 @@ public class CachedLanguageProvider implements LanguageProvider {
         this.locales = Collections.synchronizedMap(new WeakHashMap<>());
     }
 
-    public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
-
-        OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
-        CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
-
-        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new Listener() {
-
-            @EventHandler
-            public void onAsyncPlayerPreJoin(LoginEvent e) {
-                UUID uuid = e.getConnection().getUniqueId();
-                provider.putLocale(uuid, remoteLanguageProvider.get(uuid));
-            }
-        });
-
-        return provider;
-    }
-
     public void putLocale(UUID uuid, List<String> locale) {
         locales.put(uuid, new ArrayList<>(locale));
+    }
+
+    public void removeLocale(UUID uuid) {
+        locales.remove(uuid);
     }
 
     @Override
@@ -61,5 +49,27 @@ public class CachedLanguageProvider implements LanguageProvider {
         List<String> result = locales.get(player);
         if (result == null || result.isEmpty()) result = fallback.get(player);
         return result;
+    }
+
+    public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
+
+        OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
+        CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
+
+        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new Listener() {
+
+            @EventHandler
+            public void onAsyncPlayerPreJoin(LoginEvent e) {
+                UUID uuid = e.getConnection().getUniqueId();
+                provider.putLocale(uuid, remoteLanguageProvider.get(uuid));
+            }
+
+            @EventHandler
+            public void onPlayerQuit(PlayerDisconnectEvent e) {
+                provider.removeLocale(e.getPlayer().getUniqueId());
+            }
+        });
+
+        return provider;
     }
 }

@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
 
@@ -31,6 +32,26 @@ public class CachedLanguageProvider implements LanguageProvider {
         this.locales = Collections.synchronizedMap(new WeakHashMap<>());
     }
 
+    public void putLocale(UUID uuid, List<String> locale) {
+        locales.put(uuid, new ArrayList<>(locale));
+    }
+
+    public void removeLocale(UUID uuid) {
+        locales.remove(uuid);
+    }
+
+    @Override
+    public void update(UUID player, String preferred) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> languageProvider.update(player, preferred));
+    }
+
+    @Override
+    public List<String> get(UUID player) {
+        List<String> result = locales.get(player);
+        if (result == null || result.isEmpty()) result = fallback.get(player);
+        return result;
+    }
+
     public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
 
         OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
@@ -44,6 +65,11 @@ public class CachedLanguageProvider implements LanguageProvider {
             }
 
             @EventHandler
+            public void onPlayerQuit(PlayerQuitEvent e) {
+                provider.removeLocale(e.getPlayer().getUniqueId());
+            }
+
+            @EventHandler
             public void onPluginDisable(PluginDisableEvent e) {
                 if (plugin != e.getPlugin()) return;
                 HandlerList.unregisterAll(this);
@@ -52,21 +78,5 @@ public class CachedLanguageProvider implements LanguageProvider {
         }, plugin);
 
         return provider;
-    }
-
-    public void putLocale(UUID uuid, List<String> locale) {
-        locales.put(uuid, new ArrayList<>(locale));
-    }
-
-    @Override
-    public void update(UUID player, String preferred) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> languageProvider.update(player, preferred));
-    }
-
-    @Override
-    public List<String> get(UUID player) {
-        List<String> result = locales.get(player);
-        if (result == null || result.isEmpty()) result = fallback.get(player);
-        return result;
     }
 }
