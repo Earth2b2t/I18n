@@ -4,7 +4,9 @@ import earth2b2t.i18n.bungeecord.CachedLanguageProvider;
 import earth2b2t.i18n.bungeecord.ChatLocation;
 import earth2b2t.i18n.bungeecord.SubTitleLocation;
 import earth2b2t.i18n.bungeecord.TitleLocation;
+import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.io.File;
@@ -71,5 +73,21 @@ public class BungeeCordI18n extends PropertiesI18n {
     public LanguageProvider newLanguageProvider() {
         return CachedLanguageProvider.create(plugin,
                 new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))));
+    }
+
+    public String plain(CommandSender sender, String key, Object... args) {
+        if (sender instanceof ProxiedPlayer) {
+            return plain(((ProxiedPlayer) sender).getUniqueId(), key, args);
+        } else {
+            return plain(key, args);
+        }
+    }
+
+    public void print(CommandSender sender, String key, Object... args) {
+        if (sender instanceof ProxiedPlayer) {
+            print(((ProxiedPlayer) sender).getUniqueId(), key, args);
+        } else {
+            sender.sendMessage(plain(key, args));
+        }
     }
 }

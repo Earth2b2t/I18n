@@ -33,6 +33,28 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
         this.locales = Collections.synchronizedMap(new HashMap<>());
     }
 
+    public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
+
+        OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
+        CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
+
+        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new Listener() {
+
+            @EventHandler
+            public void onAsyncPlayerPreJoin(LoginEvent e) {
+                UUID uuid = e.getConnection().getUniqueId();
+                provider.putLocale(uuid, remoteLanguageProvider.get(uuid));
+            }
+
+            @EventHandler
+            public void onPlayerQuit(PlayerDisconnectEvent e) {
+                provider.removeLocale(e.getPlayer().getUniqueId());
+            }
+        });
+
+        return provider;
+    }
+
     public void putLocale(UUID uuid, List<String> locale) {
         locales.put(uuid, new ArrayList<>(locale));
     }
@@ -59,27 +81,5 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
     @Override
     public void close() throws IOException {
         languageProvider.close();
-    }
-
-    public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
-
-        OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
-        CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
-
-        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new Listener() {
-
-            @EventHandler
-            public void onAsyncPlayerPreJoin(LoginEvent e) {
-                UUID uuid = e.getConnection().getUniqueId();
-                provider.putLocale(uuid, remoteLanguageProvider.get(uuid));
-            }
-
-            @EventHandler
-            public void onPlayerQuit(PlayerDisconnectEvent e) {
-                provider.removeLocale(e.getPlayer().getUniqueId());
-            }
-        });
-
-        return provider;
     }
 }
