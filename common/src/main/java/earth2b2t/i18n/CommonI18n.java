@@ -179,7 +179,9 @@ abstract public class CommonI18n implements I18n {
                     if (j == messages[i].length - 1) continue;
                     builder.append(toString(index++, args));
                 }
-                locations[i].print(player, builder.toString());
+                String string = builder.toString();
+                if (i == 0 && messages.length > 1 && string.isEmpty()) continue;
+                locations[i].print(player, string);
             }
         }
     }
