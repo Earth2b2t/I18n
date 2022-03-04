@@ -47,7 +47,14 @@ public class BungeeCordI18n extends PropertiesI18n {
         }
 
         Plugin plugin = ProxyServer.getInstance().getPluginManager().getPlugins().stream()
-                .filter(it -> it.getFile().equals(pluginFile))
+                .filter(it -> {
+                    try {
+                        return it.getFile().getCanonicalPath().equals(pluginFile.getCanonicalPath());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                })
                 .findAny()
                 .orElse(null);
 
