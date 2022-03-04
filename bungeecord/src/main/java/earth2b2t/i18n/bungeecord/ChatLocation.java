@@ -13,7 +13,8 @@ public class ChatLocation implements Location {
     @Override
     public void print(UUID player, String msg) {
         ProxiedPlayer p = ProxyServer.getInstance().getPlayer(player);
-        if (p != null) p.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', msg)));
+        if (p == null) return;
+        p.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', msg)));
     }
 
     @Override

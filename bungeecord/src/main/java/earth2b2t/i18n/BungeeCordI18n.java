@@ -1,5 +1,6 @@
 package earth2b2t.i18n;
 
+import earth2b2t.i18n.bungeecord.ActionLocation;
 import earth2b2t.i18n.bungeecord.CachedLanguageProvider;
 import earth2b2t.i18n.bungeecord.ChatLocation;
 import earth2b2t.i18n.bungeecord.SubTitleLocation;
@@ -27,7 +28,7 @@ public class BungeeCordI18n extends PropertiesI18n {
 
     static {
         LOCATIONS = Collections.unmodifiableCollection(Arrays.asList(
-                DEFAULT_LOCATION, new TitleLocation(), new SubTitleLocation()
+                DEFAULT_LOCATION, new TitleLocation(), new SubTitleLocation(), new ActionLocation()
         ));
     }
 

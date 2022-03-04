@@ -11,7 +11,8 @@ public class SubTitleLocation implements Location {
     @Override
     public void print(UUID player, String msg) {
         Player p = Bukkit.getPlayer(player);
-        if (p != null) p.sendTitle(null, ChatColor.translateAlternateColorCodes('&', msg), 5, 30, 5);
+        if (p == null) return;
+        p.sendTitle(null, ChatColor.translateAlternateColorCodes('&', msg), 5, 30, 5);
     }
 
     @Override

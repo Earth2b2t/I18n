@@ -13,13 +13,14 @@ public class SubTitleLocation implements Location {
     @Override
     public void print(UUID player, String msg) {
         ProxiedPlayer p = ProxyServer.getInstance().getPlayer(player);
+        if (p == null) return;
         Title title = ProxyServer.getInstance()
                 .createTitle()
                 .subTitle(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', msg)))
                 .fadeIn(5)
                 .stay(30)
                 .fadeOut(5);
-        if (p != null) p.sendTitle(title);
+        p.sendTitle(title);
     }
 
     @Override

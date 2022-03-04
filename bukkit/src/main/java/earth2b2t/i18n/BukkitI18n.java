@@ -1,5 +1,6 @@
 package earth2b2t.i18n;
 
+import earth2b2t.i18n.bukkit.ActionLocation;
 import earth2b2t.i18n.bukkit.CachedLanguageProvider;
 import earth2b2t.i18n.bukkit.ChatLocation;
 import earth2b2t.i18n.bukkit.SubTitleLocation;
@@ -25,7 +26,7 @@ public class BukkitI18n extends PropertiesI18n {
 
     static {
         LOCATIONS = Collections.unmodifiableCollection(Arrays.asList(
-                DEFAULT_LOCATION, new TitleLocation(), new SubTitleLocation()
+                DEFAULT_LOCATION, new TitleLocation(), new SubTitleLocation(), new ActionLocation()
         ));
     }
 
