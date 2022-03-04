@@ -4,6 +4,8 @@ import earth2b2t.i18n.bukkit.CachedLanguageProvider;
 import earth2b2t.i18n.bukkit.ChatLocation;
 import earth2b2t.i18n.bukkit.SubTitleLocation;
 import earth2b2t.i18n.bukkit.TitleLocation;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -58,5 +60,21 @@ public class BukkitI18n extends PropertiesI18n {
     public LanguageProvider newLanguageProvider() {
         return CachedLanguageProvider.create(plugin,
                 new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))));
+    }
+
+    public String plain(CommandSender sender, String key, Object... args) {
+        if (sender instanceof Player) {
+            return plain(((Player) sender).getUniqueId(), key, args);
+        } else {
+            return plain(key, args);
+        }
+    }
+
+    public void print(CommandSender sender, String key, Object... args) {
+        if (sender instanceof Player) {
+            print(((Player) sender).getUniqueId(), key, args);
+        } else {
+            sender.sendMessage(plain(key, args));
+        }
     }
 }

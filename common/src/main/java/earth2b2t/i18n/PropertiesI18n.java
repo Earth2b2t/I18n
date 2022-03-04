@@ -1,7 +1,5 @@
 package earth2b2t.i18n;
 
-import org.bukkit.ChatColor;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,6 +24,8 @@ import java.util.zip.ZipFile;
 
 abstract public class PropertiesI18n extends CommonI18n {
 
+    public static final char COLOR_CHAR = '\u00A7';
+    public static final String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
     private final ArrayList<Language> languages = new ArrayList<>();
     private final File dataFolder;
     private LanguageProvider languageProvider;
@@ -71,6 +71,17 @@ abstract public class PropertiesI18n extends CommonI18n {
             }
             languages.add(SingleLanguage.fromProperties(file.getName().replace(".properties", ""), properties));
         }
+    }
+
+    public static String translateAlternateColorCodes(char altColorChar, String textToTranslate) {
+        char[] b = textToTranslate.toCharArray();
+        for (int i = 0; i < b.length - 1; i++) {
+            if (b[i] == altColorChar && ALL_CODES.indexOf(b[i + 1]) > -1) {
+                b[i] = COLOR_CHAR;
+                b[i + 1] = Character.toLowerCase(b[i + 1]);
+            }
+        }
+        return new String(b);
     }
 
     abstract public LanguageProvider newLanguageProvider();
@@ -142,12 +153,12 @@ abstract public class PropertiesI18n extends CommonI18n {
 
     @Override
     public String plain(String key, Object... args) {
-        return ChatColor.translateAlternateColorCodes('&', super.plain(key, args));
+        return translateAlternateColorCodes('&', super.plain(key, args));
     }
 
     @Override
     public String plain(UUID player, String key, Object... args) {
-        return ChatColor.translateAlternateColorCodes('&', super.plain(player, key, args));
+        return translateAlternateColorCodes('&', super.plain(player, key, args));
     }
 
     @Override

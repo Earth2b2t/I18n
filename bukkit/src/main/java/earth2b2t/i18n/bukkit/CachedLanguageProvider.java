@@ -35,34 +35,6 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
         this.locales = Collections.synchronizedMap(new HashMap<>());
     }
 
-    public void putLocale(UUID uuid, List<String> locale) {
-        locales.put(uuid, new ArrayList<>(locale));
-    }
-
-    public void removeLocale(UUID uuid) {
-        locales.remove(uuid);
-    }
-
-    @Override
-    public void update(UUID player, String preferred) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            languageProvider.update(player, preferred);
-            putLocale(player, languageProvider.get(player));
-        });
-    }
-
-    @Override
-    public List<String> get(UUID player) {
-        List<String> result = locales.get(player);
-        if (result == null || result.isEmpty()) result = fallback.get(player);
-        return result;
-    }
-
-    @Override
-    public void close() throws IOException {
-        languageProvider.close();
-    }
-
     public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
 
         OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
@@ -96,5 +68,33 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
         }, plugin);
 
         return provider;
+    }
+
+    public void putLocale(UUID uuid, List<String> locale) {
+        locales.put(uuid, new ArrayList<>(locale));
+    }
+
+    public void removeLocale(UUID uuid) {
+        locales.remove(uuid);
+    }
+
+    @Override
+    public void update(UUID player, String preferred) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            languageProvider.update(player, preferred);
+            putLocale(player, languageProvider.get(player));
+        });
+    }
+
+    @Override
+    public List<String> get(UUID player) {
+        List<String> result = locales.get(player);
+        if (result == null || result.isEmpty()) result = fallback.get(player);
+        return result;
+    }
+
+    @Override
+    public void close() throws IOException {
+        languageProvider.close();
     }
 }
