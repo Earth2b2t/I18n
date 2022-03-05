@@ -38,20 +38,7 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
         OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
         CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
 
-        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new Listener() {
-
-            @EventHandler
-            public void onAsyncPlayerPreJoin(LoginEvent e) {
-                UUID uuid = e.getConnection().getUniqueId();
-                provider.putLocale(uuid, remoteLanguageProvider.get(uuid));
-            }
-
-            @EventHandler
-            public void onPlayerQuit(PlayerDisconnectEvent e) {
-                provider.removeLocale(e.getPlayer().getUniqueId());
-            }
-        });
-
+        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new PlayerListener(provider, remoteLanguageProvider));
         return provider;
     }
 
@@ -81,5 +68,27 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
     @Override
     public void close() throws IOException {
         languageProvider.close();
+    }
+
+    public static class PlayerListener implements Listener {
+
+        private final CachedLanguageProvider provider;
+        private final RemoteLanguageProvider remoteLanguageProvider;
+
+        public PlayerListener(CachedLanguageProvider provider, RemoteLanguageProvider remoteLanguageProvider) {
+            this.provider = provider;
+            this.remoteLanguageProvider = remoteLanguageProvider;
+        }
+
+        @EventHandler
+        public void onAsyncPlayerPreJoin(LoginEvent e) {
+            UUID uuid = e.getConnection().getUniqueId();
+            provider.putLocale(uuid, remoteLanguageProvider.get(uuid));
+        }
+
+        @EventHandler
+        public void onPlayerQuit(PlayerDisconnectEvent e) {
+            provider.removeLocale(e.getPlayer().getUniqueId());
+        }
     }
 }
