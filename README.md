@@ -4,7 +4,7 @@ Internationalization library for Minecraft.
 
 ## Why should you use this library?
 
-Because this library is simple to use and well documented. You can also use indexed arguments and our location system to
+Because this library is simple to use and supports BungeeCord as well as Spigot. You can also use indexed arguments and our location system to
 heavily customize the output.
 
 ## Gradle
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.Earth2b2t.I18n:i18n-bukkit:1.1.0'
+    implementation 'com.github.Earth2b2t.I18n:i18n-bukkit:1.2.10'
 }
 ```
 
@@ -66,7 +66,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 public class JoinListener implements Listener {
 
-    private final I18n i18n = BukkitI18n.get(JoinListener.class);
+    private final BukkitI18n i18n = BukkitI18n.get(JoinListener.class);
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
