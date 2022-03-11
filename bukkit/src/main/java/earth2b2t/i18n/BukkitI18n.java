@@ -37,26 +37,6 @@ public class BukkitI18n extends PropertiesI18n {
         this.plugin = plugin;
     }
 
-    public static BukkitI18n get(Class<?> c) {
-        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(c);
-        if (plugin == null) {
-            throw new IllegalArgumentException("Provided class is not a part of any plugin: " + c.getCanonicalName());
-        }
-        return get(plugin);
-    }
-
-    public static BukkitI18n get(Plugin plugin) {
-        BukkitI18n i18n = cached.get(plugin);
-        if (i18n != null) return i18n;
-        try {
-            i18n = new BukkitI18n(plugin);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        cached.put(plugin, i18n);
-        return i18n;
-    }
-
     @Override
     public LanguageProvider newLanguageProvider() {
         return CachedLanguageProvider.create(plugin,
@@ -77,5 +57,26 @@ public class BukkitI18n extends PropertiesI18n {
         } else {
             sender.sendMessage(plain(key, args));
         }
+    }
+
+    public static BukkitI18n get(Class<?> c) {
+        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(c);
+        if (plugin == null) {
+            throw new IllegalArgumentException("Provided class is not a part of any plugin: " + c.getCanonicalName());
+        }
+        return get(plugin);
+    }
+
+    public static BukkitI18n get(Plugin plugin) {
+        BukkitI18n i18n = cached.get(plugin);
+        if (i18n != null) return i18n;
+        try {
+            i18n = new BukkitI18n(plugin);
+            i18n.getLanguageProvider();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        cached.put(plugin, i18n);
+        return i18n;
     }
 }

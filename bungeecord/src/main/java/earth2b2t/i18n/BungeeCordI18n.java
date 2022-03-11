@@ -39,6 +39,28 @@ public class BungeeCordI18n extends PropertiesI18n {
         this.plugin = plugin;
     }
 
+    @Override
+    public LanguageProvider newLanguageProvider() {
+        return CachedLanguageProvider.create(plugin,
+                new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))));
+    }
+
+    public String plain(CommandSender sender, String key, Object... args) {
+        if (sender instanceof ProxiedPlayer) {
+            return plain(((ProxiedPlayer) sender).getUniqueId(), key, args);
+        } else {
+            return plain(key, args);
+        }
+    }
+
+    public void print(CommandSender sender, String key, Object... args) {
+        if (sender instanceof ProxiedPlayer) {
+            print(((ProxiedPlayer) sender).getUniqueId(), key, args);
+        } else {
+            sender.sendMessage(plain(key, args));
+        }
+    }
+
     public static BungeeCordI18n get(Class<?> c) {
         File pluginFile;
         try {
@@ -70,6 +92,7 @@ public class BungeeCordI18n extends PropertiesI18n {
         if (i18n != null) return i18n;
         try {
             i18n = new BungeeCordI18n(plugin);
+            i18n.getLanguageProvider();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -77,25 +100,4 @@ public class BungeeCordI18n extends PropertiesI18n {
         return i18n;
     }
 
-    @Override
-    public LanguageProvider newLanguageProvider() {
-        return CachedLanguageProvider.create(plugin,
-                new RemoteLanguageProviderAdapter(new FileLanguageProvider(plugin.getDataFolder().toPath().resolve("lang/players"))));
-    }
-
-    public String plain(CommandSender sender, String key, Object... args) {
-        if (sender instanceof ProxiedPlayer) {
-            return plain(((ProxiedPlayer) sender).getUniqueId(), key, args);
-        } else {
-            return plain(key, args);
-        }
-    }
-
-    public void print(CommandSender sender, String key, Object... args) {
-        if (sender instanceof ProxiedPlayer) {
-            print(((ProxiedPlayer) sender).getUniqueId(), key, args);
-        } else {
-            sender.sendMessage(plain(key, args));
-        }
-    }
 }
