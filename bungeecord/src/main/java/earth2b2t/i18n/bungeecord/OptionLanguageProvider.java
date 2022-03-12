@@ -19,7 +19,7 @@ public class OptionLanguageProvider implements LanguageProvider {
     public List<String> get(UUID player) {
         ProxiedPlayer p = ProxyServer.getInstance().getPlayer(player);
         if (p != null) {
-            return Collections.singletonList(p.getLocale().toLanguageTag().replace("-", "_"));
+            return Collections.singletonList(p.getLocale().toLanguageTag().toLowerCase().replace("-", "_"));
         }
 
         return Collections.emptyList();
