@@ -5,13 +5,21 @@ import earth2b2t.i18n.bukkit.CachedLanguageProvider;
 import earth2b2t.i18n.bukkit.ChatLocation;
 import earth2b2t.i18n.bukkit.SubTitleLocation;
 import earth2b2t.i18n.bukkit.TitleLocation;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,10 +68,54 @@ public class BukkitI18n extends PropertiesI18n {
     }
 
     public static BukkitI18n get(Class<?> c) {
-        JavaPlugin plugin = JavaPlugin.getProvidingPlugin(c);
-        if (plugin == null) {
-            throw new IllegalArgumentException("Provided class is not a part of any plugin: " + c.getCanonicalName());
+        Plugin plugin = null;
+
+        try {
+            plugin = JavaPlugin.getProvidingPlugin(c);
+        } catch (IllegalArgumentException e) {
+            // ignore
         }
+
+        // load from loaded plugins
+        if (plugin == null) {
+            try (InputStream in = BukkitI18n.class.getResourceAsStream("/plugin.yml")) {
+                if (in != null) {
+                    try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+                        YamlConfiguration conf = new YamlConfiguration();
+                        conf.load(reader);
+                        String name = conf.getString("name");
+                        if (name == null) {
+                            throw new IllegalStateException("plugin.yml was found but plugin name isn't specified");
+                        }
+                        plugin = Bukkit.getPluginManager().getPlugin(name);
+                    }
+                }
+            } catch (IOException | InvalidConfigurationException e) {
+                // ignore
+            }
+        }
+
+        // MockBukkit
+        if (plugin == null) {
+            plugin = Bukkit.getPluginManager().getPlugin("mock-i18n");
+        }
+
+        if (plugin == null) {
+            try {
+                Class<?> mockBukkit = Class.forName("be.seeseemelk.mockbukkit.MockBukkit");
+                Method createMockPlugin = mockBukkit.getMethod("createMockPlugin", String.class);
+                plugin = (Plugin) createMockPlugin.invoke(null, "mock-i18n");
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
+                // ignore
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException("An error occurred while creating a mock plugin", e);
+            }
+        }
+
+        if (plugin == null) {
+            throw new IllegalArgumentException("Could not find any plugin: " + c.getCanonicalName());
+        }
+
         return get(plugin);
     }
 
