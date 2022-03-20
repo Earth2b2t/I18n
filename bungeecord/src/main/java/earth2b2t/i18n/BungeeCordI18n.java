@@ -31,7 +31,7 @@ public class BungeeCordI18n extends ClasspathI18n {
     private final Plugin plugin;
 
     private BungeeCordI18n(Plugin plugin) throws IOException {
-        super(plugin.getDataFolder().toPath().resolve("lang"), plugin.getClass().getClassLoader());
+        super(plugin.getDataFolder().toPath().resolve("lang"), plugin.getClass());
         this.plugin = plugin;
     }
 

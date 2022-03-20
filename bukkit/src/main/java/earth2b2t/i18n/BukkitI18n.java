@@ -30,7 +30,7 @@ public class BukkitI18n extends ClasspathI18n {
     private final Plugin plugin;
 
     private BukkitI18n(Plugin plugin) throws IOException {
-        super(plugin.getDataFolder().toPath().resolve("lang"), plugin.getClass().getClassLoader());
+        super(plugin.getDataFolder().toPath().resolve("lang"), plugin.getClass());
         this.plugin = plugin;
     }
 

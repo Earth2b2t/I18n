@@ -7,6 +7,8 @@ import lombok.Setter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Loads all languages in lang directory from specified directory.
@@ -42,26 +46,17 @@ abstract public class ClasspathI18n extends CommonI18n {
      * Creates {@link ClasspathI18n} instance.
      * Be careful because this constructor automatically loads all languages from classpath and then copies to the specified directory.
      *
-     * @param baseDir     directory where the language files are copied to/loaded from
-     * @param classLoader {@link ClassLoader} where the lang directory exists
+     * @param baseDir   directory where the language files are copied to/loaded from
+     * @param mainClass main class
      * @throws IOException when an IO error occurs while loading from classpath or copying to the specified directory
      */
-    protected ClasspathI18n(Path baseDir, ClassLoader classLoader) throws IOException {
+    protected ClasspathI18n(Path baseDir, Class<?> mainClass) throws IOException {
         this.baseDir = baseDir;
         Files.createDirectories(baseDir);
 
-        // list directory
-        List<String> entries;
-        try (InputStream in = classLoader.getResourceAsStream("lang")) {
-            if (in == null) {
-                throw new IllegalArgumentException("The plugin doesn't have lang directory");
-            }
-            entries = List.of(new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R"));
-        }
-
         // copy lang directory
-        for (String entry : entries) {
-            String properties = updateProperties(classLoader, "lang/" + entry);
+        for (String entry : scan(mainClass)) {
+            String properties = updateProperties(mainClass.getClassLoader(), "lang/" + entry);
             Files.writeString(baseDir.resolve(entry), properties);
         }
 
@@ -156,5 +151,38 @@ abstract public class ClasspathI18n extends CommonI18n {
             }
         }
         return new String(b);
+    }
+
+    private static List<String> scan(Class<?> c) throws IOException {
+        List<String> entries = new ArrayList<>();
+
+        // Maven/Gradle
+        try (InputStream in = c.getResourceAsStream("/lang")) {
+            String contents = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            if (!contents.isEmpty()) {
+                entries.addAll(Arrays.asList(contents.split("\\R")));
+            }
+        }
+
+        // Jar
+        if (entries.isEmpty()) {
+            URL url = c.getProtectionDomain().getCodeSource().getLocation();
+            ZipFile zipFile;
+
+            try {
+                zipFile = new ZipFile(url.toURI().getPath());
+            } catch (URISyntaxException e) {
+                throw new IOException(e);
+            }
+
+            for (ZipEntry entry : Collections.list(zipFile.entries())) {
+                if (entry.isDirectory()) continue;
+                if (!entry.getName().startsWith("lang")) continue;
+                if (!entry.getName().endsWith(".properties")) continue;
+                entries.add(entry.getName().replaceFirst("lang/", ""));
+            }
+        }
+
+        return entries;
     }
 }
