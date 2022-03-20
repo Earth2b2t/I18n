@@ -15,11 +15,11 @@ build.gradle
 
 ```groovy
 repositories {
-    maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.2b2t.earth/repository/maven-releases/' }
 }
 
 dependencies {
-    implementation 'com.github.Earth2b2t.I18n:i18n-bukkit:1.2.10'
+    implementation 'earth2b2t:i18n-bukkit:2.0.0'
 }
 ```
 
@@ -46,7 +46,7 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         BukkitI18n i18n = BukkitI18n.get(Main.class);
-        i18n.setFallbackLanguage("ja_jp");
+        i18n.setDefaultLanguage("ja_jp");
         Bukkit.getPluginManager().registerEvents(new JoinListener(), this);
     }
 }
