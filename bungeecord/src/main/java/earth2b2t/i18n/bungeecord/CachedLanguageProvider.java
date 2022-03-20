@@ -1,7 +1,7 @@
 package earth2b2t.i18n.bungeecord;
 
-import earth2b2t.i18n.LanguageProvider;
-import earth2b2t.i18n.RemoteLanguageProvider;
+import earth2b2t.i18n.provider.LanguageProvider;
+import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -11,58 +11,34 @@ import net.md_5.bungee.event.EventHandler;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
+/**
+ * Fetches language data asynchronously on joining the server, removes cache on leaving the server.
+ */
 public class CachedLanguageProvider implements LanguageProvider, Closeable {
 
-    private final Plugin plugin;
-    private final RemoteLanguageProvider languageProvider;
-    private final LanguageProvider fallback;
-    private final Map<UUID, List<String>> locales;
+    private final LanguageProvider languageProvider;
+    private final Map<UUID, List<String>> languages;
 
-    public CachedLanguageProvider(Plugin plugin, RemoteLanguageProvider languageProvider, LanguageProvider fallback) {
-        this.plugin = plugin;
+    private CachedLanguageProvider(LanguageProvider languageProvider) {
         this.languageProvider = languageProvider;
-        this.fallback = fallback;
-        this.locales = Collections.synchronizedMap(new HashMap<>());
-    }
-
-    public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
-
-        OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
-        CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
-
-        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new PlayerListener(provider, remoteLanguageProvider));
-        return provider;
-    }
-
-    public void putLocale(UUID uuid, List<String> locale) {
-        locales.put(uuid, new ArrayList<>(locale));
-    }
-
-    public void removeLocale(UUID uuid) {
-        locales.remove(uuid);
+        this.languages = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public void update(UUID player, String preferred) {
-        ProxyServer.getInstance().getScheduler().schedule(plugin, () -> {
-            languageProvider.update(player, preferred);
-            putLocale(player, languageProvider.get(player));
-        }, 0, TimeUnit.MILLISECONDS);
+        languageProvider.update(player, preferred);
+        languages.put(player, languageProvider.get(player));
     }
 
     @Override
     public List<String> get(UUID player) {
-        List<String> result = locales.get(player);
-        if (result == null || result.isEmpty()) result = fallback.get(player);
-        return result;
+        return languages.get(player);
     }
 
     @Override
@@ -70,25 +46,35 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
         languageProvider.close();
     }
 
-    public static class PlayerListener implements Listener {
+    /**
+     * Creates instance and register its listener to {@link net.md_5.bungee.api.plugin.PluginManager}.
+     *
+     * @param plugin           plugin with language directory in its classpath
+     * @param languageProvider backend language provider
+     * @return created {@link CachedLanguageProvider} instance
+     */
+    public static CachedLanguageProvider create(Plugin plugin, LanguageProvider languageProvider) {
+
+        CachedLanguageProvider provider = new CachedLanguageProvider(languageProvider);
+        ProxyServer.getInstance().getPluginManager().registerListener(plugin, new LoginListener(provider));
+
+        return provider;
+    }
+
+    @RequiredArgsConstructor
+    private static class LoginListener implements Listener {
 
         private final CachedLanguageProvider provider;
-        private final RemoteLanguageProvider remoteLanguageProvider;
-
-        public PlayerListener(CachedLanguageProvider provider, RemoteLanguageProvider remoteLanguageProvider) {
-            this.provider = provider;
-            this.remoteLanguageProvider = remoteLanguageProvider;
-        }
 
         @EventHandler
         public void onAsyncPlayerPreJoin(LoginEvent e) {
             UUID uuid = e.getConnection().getUniqueId();
-            provider.putLocale(uuid, remoteLanguageProvider.get(uuid));
+            provider.languages.put(uuid, provider.languageProvider.get(uuid));
         }
 
         @EventHandler
         public void onPlayerQuit(PlayerDisconnectEvent e) {
-            provider.removeLocale(e.getPlayer().getUniqueId());
+            provider.languages.remove(e.getPlayer().getUniqueId());
         }
     }
 }

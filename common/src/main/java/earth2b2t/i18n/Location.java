@@ -6,6 +6,7 @@ import java.util.UUID;
  * Represents a way to send a message.
  */
 public interface Location {
+
     /**
      * Sends a message to the player.
      *

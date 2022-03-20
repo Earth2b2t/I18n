@@ -1,6 +1,5 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
 }
 
 group 'earth2b2t'
@@ -8,14 +7,45 @@ version = rootProject.property('version')
 
 subprojects {
     apply plugin: 'maven-publish'
+
     afterEvaluate {
+
         publishing {
+
+            java {
+                withJavadocJar()
+                withSourcesJar()
+            }
+
             publications {
-                "$project.name"(MavenPublication) {
+                mavenJava(MavenPublication) {
                     groupId rootProject.group
                     artifactId rootProject.name + '-' + project.name
                     version rootProject.version
                     from components.java
+                    pom {
+                        name = 'I18n'
+                        description = 'An internationalization library for Minecraft'
+                        url = 'https://github.com/Earth2b2t/I18n'
+                        scm {
+                            connection = 'scm:git:git@github.com:Earth2b2t/I18n.git'
+                            developerConnection = 'scm:git:ssh://example.com/my-library.git'
+                            url = 'https://github.com/Earth2b2t/I18n'
+                        }
+                    }
+                }
+            }
+
+            repositories {
+                maven {
+                    def snapshotUrl = 'https://repo.2b2t.earth/repository/maven-snapshots/'
+                    def releaseUrl = 'https://repo.2b2t.earth/repository/maven-releases/'
+
+                    url = version.endsWith('-SNAPSHOT') ? snapshotUrl : releaseUrl
+                    credentials {
+                        username = System.getenv('EARTH2B2T_REPO_USERNAME')
+                        password = System.getenv('EARTH2B2T_REPO_PASSWORD')
+                    }
                 }
             }
         }

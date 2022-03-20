@@ -14,7 +14,7 @@ public interface I18n {
      * @param uuid {@link UUID} of the player
      * @param key  translation key
      * @param args arguments used for placeholders, in order.
-     * @return Message based on player's language
+     * @return message based on player's language
      */
     String plain(UUID uuid, String key, Object... args);
 
@@ -24,7 +24,7 @@ public interface I18n {
      *
      * @param key  translation key
      * @param args arguments used for placeholders, in order.
-     * @return Message based on player's language
+     * @return message based on player's language
      */
     String plain(String key, Object... args);
 

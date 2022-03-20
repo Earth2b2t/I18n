@@ -3,15 +3,15 @@ package earth2b2t.i18n;
 /**
  * Represents a language.
  */
-public interface Language {
+public interface Translator {
 
     /**
-     * Returns the locale.
+     * Returns the language.
      * e.g. for Japanese, {@code ja_jp} should be returned.
      *
-     * @return locale.
+     * @return language
      */
-    String getLocale();
+    String getLanguage();
 
     /**
      * Returns the translation matching translation key.

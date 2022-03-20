@@ -1,36 +1,48 @@
 package earth2b2t;
 
 import earth2b2t.i18n.CommonI18n;
-import earth2b2t.i18n.EmptyLanguageProvider;
-import earth2b2t.i18n.Language;
-import earth2b2t.i18n.LanguageProvider;
 import earth2b2t.i18n.Location;
+import earth2b2t.i18n.Translator;
+import earth2b2t.i18n.provider.LanguageProvider;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class SingleI18n extends CommonI18n {
 
-    private final Language language;
+    private final Translator translator;
+    private final Location location;
+    private final LanguageProvider languageProvider;
 
-    public SingleI18n(Language language, Location... location) {
-        super(Arrays.asList(location), location[0]);
-        this.language = language;
+    public SingleI18n(Translator translator, Location location) {
+        this.translator = translator;
+        this.location = location;
+        this.languageProvider = new EmptyLanguageProvider();
     }
 
     @Override
-    public Collection<Language> getLanguages() {
-        return Collections.singleton(language);
+    public Collection<Translator> getTranslators() {
+        return Collections.singleton(translator);
     }
 
     @Override
-    public Language getDefaultLanguage() {
-        return language;
+    public Translator getDefaultTranslator() {
+        return translator;
     }
 
     @Override
     public LanguageProvider getLanguageProvider() {
-        return new EmptyLanguageProvider();
+        return languageProvider;
+    }
+
+    @Override
+    public Collection<Location> getLocations() {
+        return List.of(location);
+    }
+
+    @Override
+    public Location getDefaultLocation() {
+        return location;
     }
 }

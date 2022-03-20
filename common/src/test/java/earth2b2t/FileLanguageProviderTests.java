@@ -1,7 +1,7 @@
 package earth2b2t;
 
 import com.google.common.jimfs.Jimfs;
-import earth2b2t.i18n.FileLanguageProvider;
+import earth2b2t.i18n.provider.FileLanguageProvider;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.nio.file.FileSystem;
 import java.util.Collections;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileLanguageProviderTests {
 

@@ -1,7 +1,7 @@
 package earth2b2t.i18n.bukkit;
 
-import earth2b2t.i18n.LanguageProvider;
-import earth2b2t.i18n.RemoteLanguageProvider;
+import earth2b2t.i18n.provider.LanguageProvider;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,89 +12,83 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
 
-import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class CachedLanguageProvider implements LanguageProvider, Closeable {
+/**
+ * Fetches language data asynchronously on joining the server, removes cache on leaving the server.
+ */
+public class CachedLanguageProvider implements LanguageProvider {
 
     private final Plugin plugin;
-    private final RemoteLanguageProvider languageProvider;
-    private final LanguageProvider fallback;
-    private final Map<UUID, List<String>> locales;
+    private final LanguageProvider languageProvider;
+    private final Map<UUID, List<String>> languages;
 
-    public CachedLanguageProvider(Plugin plugin, RemoteLanguageProvider languageProvider, LanguageProvider fallback) {
+    private CachedLanguageProvider(Plugin plugin, LanguageProvider languageProvider) {
         this.plugin = plugin;
         this.languageProvider = languageProvider;
-        this.fallback = fallback;
-        this.locales = Collections.synchronizedMap(new HashMap<>());
-    }
-
-    public static CachedLanguageProvider create(Plugin plugin, RemoteLanguageProvider remoteLanguageProvider) {
-
-        OptionLanguageProvider optionLanguageProvider = new OptionLanguageProvider();
-        CachedLanguageProvider provider = new CachedLanguageProvider(plugin, remoteLanguageProvider, optionLanguageProvider);
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                provider.putLocale(player.getUniqueId(), remoteLanguageProvider.get(player.getUniqueId()));
-            });
-        }
-
-        Bukkit.getPluginManager().registerEvents(new Listener() {
-
-            @EventHandler
-            public void onAsyncPlayerPreJoin(AsyncPlayerPreLoginEvent e) {
-                provider.putLocale(e.getUniqueId(), remoteLanguageProvider.get(e.getUniqueId()));
-            }
-
-            @EventHandler
-            public void onPlayerQuit(PlayerQuitEvent e) {
-                provider.removeLocale(e.getPlayer().getUniqueId());
-            }
-
-            @EventHandler
-            public void onPluginDisable(PluginDisableEvent e) throws IOException {
-                if (plugin != e.getPlugin()) return;
-                HandlerList.unregisterAll(this);
-                provider.close();
-            }
-
-        }, plugin);
-
-        return provider;
-    }
-
-    public void putLocale(UUID uuid, List<String> locale) {
-        locales.put(uuid, new ArrayList<>(locale));
-    }
-
-    public void removeLocale(UUID uuid) {
-        locales.remove(uuid);
+        this.languages = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public void update(UUID player, String preferred) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            languageProvider.update(player, preferred);
-            putLocale(player, languageProvider.get(player));
-        });
+        languageProvider.update(player, preferred);
+        languages.put(player, languageProvider.get(player));
     }
 
     @Override
     public List<String> get(UUID player) {
-        List<String> result = locales.get(player);
-        if (result == null || result.isEmpty()) result = fallback.get(player);
-        return result;
+        return languages.get(player);
     }
 
     @Override
     public void close() throws IOException {
         languageProvider.close();
+    }
+
+    /**
+     * Creates instance and register its listener to {@link org.bukkit.plugin.PluginManager}.
+     *
+     * @param plugin           plugin with language directory in its classpath
+     * @param languageProvider backend language provider
+     * @return created {@link CachedLanguageProvider} instance
+     */
+    public static CachedLanguageProvider create(Plugin plugin, LanguageProvider languageProvider) {
+
+        CachedLanguageProvider provider = new CachedLanguageProvider(plugin, languageProvider);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            provider.languages.put(player.getUniqueId(), languageProvider.get(player.getUniqueId()));
+        }
+
+        Bukkit.getPluginManager().registerEvents(new LoginListener(provider), plugin);
+        return provider;
+    }
+
+    @RequiredArgsConstructor
+    private static class LoginListener implements Listener {
+
+        private final CachedLanguageProvider provider;
+
+        @EventHandler
+        public void onAsyncPlayerPreJoin(AsyncPlayerPreLoginEvent e) {
+            if (e.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) return;
+            provider.languages.put(e.getUniqueId(), provider.languageProvider.get(e.getUniqueId()));
+        }
+
+        @EventHandler
+        public void onPlayerQuit(PlayerQuitEvent e) {
+            provider.languages.remove(e.getPlayer().getUniqueId());
+        }
+
+        @EventHandler
+        public void onPluginDisable(PluginDisableEvent e) {
+            if (provider.plugin != e.getPlugin()) return;
+            HandlerList.unregisterAll(this);
+        }
     }
 }

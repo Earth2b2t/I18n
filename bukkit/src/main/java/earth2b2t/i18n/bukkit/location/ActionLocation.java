@@ -1,4 +1,4 @@
-package earth2b2t.i18n.bukkit;
+package earth2b2t.i18n.bukkit.location;
 
 import earth2b2t.i18n.Location;
 import net.md_5.bungee.api.ChatMessageType;
@@ -9,6 +9,9 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
+/**
+ * Sends a message in Player's action bar.
+ */
 public class ActionLocation implements Location {
     @Override
     public void print(UUID player, String msg) {

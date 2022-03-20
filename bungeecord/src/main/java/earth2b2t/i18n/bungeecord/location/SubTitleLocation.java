@@ -1,4 +1,4 @@
-package earth2b2t.i18n.bungeecord;
+package earth2b2t.i18n.bungeecord.location;
 
 import earth2b2t.i18n.Location;
 import net.md_5.bungee.api.ChatColor;
@@ -9,14 +9,17 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.util.UUID;
 
-public class TitleLocation implements Location {
+/**
+ * Sends a message in player's subtitle.
+ */
+public class SubTitleLocation implements Location {
     @Override
     public void print(UUID player, String msg) {
         ProxiedPlayer p = ProxyServer.getInstance().getPlayer(player);
         if (p == null) return;
         Title title = ProxyServer.getInstance()
                 .createTitle()
-                .title(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', msg)))
+                .subTitle(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', msg)))
                 .fadeIn(5)
                 .stay(30)
                 .fadeOut(5);
@@ -25,6 +28,6 @@ public class TitleLocation implements Location {
 
     @Override
     public char getPrefix() {
-        return 't';
+        return 's';
     }
 }
