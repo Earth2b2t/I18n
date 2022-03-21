@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.WeakHashMap;
 
@@ -105,7 +106,10 @@ public class BungeeCordI18n extends ClasspathI18n {
      * @return instance matching the plugin loading the specified class.
      */
     public static BungeeCordI18n get(Class<?> c) {
-        for (Plugin plugin : ProxyServer.getInstance().getPluginManager().getPlugins()) {
+        HashSet<Plugin> plugins = new HashSet<>(cached.keySet());
+        plugins.addAll(ProxyServer.getInstance().getPluginManager().getPlugins());
+
+        for (Plugin plugin : plugins) {
             if (plugin.getClass().getClassLoader() == c.getClassLoader()) {
                 return get(plugin);
             }

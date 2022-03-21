@@ -15,7 +15,9 @@ import org.bukkit.plugin.Plugin;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.WeakHashMap;
 
@@ -104,7 +106,10 @@ public class BukkitI18n extends ClasspathI18n {
      * @return instance matching the plugin loading the specified class.
      */
     public static BukkitI18n get(Class<?> c) {
-        for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+        HashSet<Plugin> plugins = new HashSet<>(cached.keySet());
+        plugins.addAll(Arrays.asList(Bukkit.getPluginManager().getPlugins()));
+
+        for (Plugin plugin : plugins) {
             if (plugin.getClass().getClassLoader() == c.getClassLoader()) {
                 return get(plugin);
             }
