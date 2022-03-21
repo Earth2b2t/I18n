@@ -41,7 +41,7 @@ subprojects {
                     def snapshotUrl = 'https://repo.2b2t.earth/repository/maven-snapshots/'
                     def releaseUrl = 'https://repo.2b2t.earth/repository/maven-releases/'
 
-                    url = version.endsWith('-SNAPSHOT') ? snapshotUrl : releaseUrl
+                    url = rootProject.version.endsWith('-SNAPSHOT') ? snapshotUrl : releaseUrl
                     credentials {
                         username = System.getenv('EARTH2B2T_REPO_USERNAME')
                         password = System.getenv('EARTH2B2T_REPO_PASSWORD')
