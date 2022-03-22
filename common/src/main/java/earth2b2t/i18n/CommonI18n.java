@@ -86,18 +86,16 @@ abstract public class CommonI18n implements I18n {
         }
 
         List<String> list = getLanguageProvider().get(player);
-        Translator translator = null;
-        for (String str : list) {
-            translator = languages.get(str);
-            if (translator != null) break;
+        Translator translator = getDefaultTranslator();
+        if (list != null) {
+            for (String str : list) {
+                translator = languages.get(str);
+                if (translator != null) break;
+            }
         }
 
-        Translator defaultTranslator = getDefaultTranslator();
         if (translator == null) {
-            if (defaultTranslator == null) {
-                throw new IllegalStateException("Default language is not set");
-            }
-            translator = defaultTranslator;
+            throw new IllegalStateException("Default language is not set");
         }
 
         return resolve(translator, key);
