@@ -41,7 +41,7 @@ public class BungeeCordI18n extends ClasspathI18n {
         LanguageProvider languageProvider = super.getLanguageProvider();
         if (languageProvider == null) {
             Path path = plugin.getDataFolder().toPath().resolve("lang/players");
-            languageProvider = CachedLanguageProvider.create(plugin, new FileLanguageProvider(plugin.getDataFolder().toPath().resolve(path)));
+            languageProvider = CachedLanguageProvider.create(plugin, new FileLanguageProvider(path));
             super.setLanguageProvider(languageProvider);
         }
         return languageProvider;

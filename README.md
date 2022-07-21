@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'earth2b2t:i18n-bukkit:2.0.0'
+    implementation 'earth2b2t:i18n-bukkit:2.0.1'
 }
 ```
 
