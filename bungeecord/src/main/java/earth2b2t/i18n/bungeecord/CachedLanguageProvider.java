@@ -62,7 +62,7 @@ public class CachedLanguageProvider implements LanguageProvider, Closeable {
     }
 
     @RequiredArgsConstructor
-    private static class LoginListener implements Listener {
+    public static class LoginListener implements Listener {
 
         private final CachedLanguageProvider provider;
 
