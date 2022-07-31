@@ -4,7 +4,7 @@ Internationalization library for Minecraft.
 
 ## Why should you use this library?
 
-Because this library is simple to use and supports BungeeCord as well as Spigot. You can also use indexed arguments and
+Because this library is simple to use and supports BungeeCord as well as Spigot. You can also use positional arguments and
 our location system to heavily customize the output.
 
 ## Gradle
