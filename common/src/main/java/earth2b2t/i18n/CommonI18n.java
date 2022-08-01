@@ -86,12 +86,16 @@ abstract public class CommonI18n implements I18n {
         }
 
         List<String> list = getLanguageProvider().get(player);
-        Translator translator = getDefaultTranslator();
+        Translator translator = null;
         if (list != null) {
             for (String str : list) {
                 translator = languages.get(str);
                 if (translator != null) break;
             }
+        }
+
+        if (translator == null) {
+            translator = getDefaultTranslator();
         }
 
         if (translator == null) {
