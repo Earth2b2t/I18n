@@ -7,22 +7,6 @@ Internationalization library for Minecraft.
 Because this library is simple to use and supports BungeeCord as well as Spigot. You can also use positional arguments and
 our location system to heavily customize the output.
 
-## Gradle
-
-build.gradle
-
-**Make sure to include this library in your jar file!(Use gradle shadow plugin)**
-
-```groovy
-repositories {
-    maven { url 'https://repo.2b2t.earth/repository/maven-releases/' }
-}
-
-dependencies {
-    implementation 'earth2b2t:i18n-bukkit:2.0.2'
-}
-```
-
 ## Tutorial(Bukkit)
 
 1. Create lang/XXX.properties in your resource directory (XXX can be ja_jp, en_us or whatever). These files are
